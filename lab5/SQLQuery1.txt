@@ -1,0 +1,184 @@
+
+--part 1
+use ITI
+--1
+select count(st_age) from student
+
+--2
+select distinct Ins_Name
+from Instructor
+
+--3
+select St_Id [Student ID],
+	ISNULL(St_Fname, '__')+' ' + ISNULL(St_Lname, '__') [Student Full Name] ,
+	d.Dept_Name
+from Department d ,Student s 
+where d.Dept_Id = s.Dept_Id
+
+--4
+select Ins_Name, Dept_Name
+from Instructor left outer join Department
+on Department.Dept_Id=Instructor.Dept_Id
+
+--5
+select CONCAT_WS(' ', St_Fname, St_Lname), c.Crs_Name
+from Student st inner join Stud_Course stC
+on st.St_Id = stc.St_Id
+inner join Course c
+on c.Crs_Id = stC.Crs_Id
+where Grade is not null
+
+--6
+select COUNT(Crs_Id), Top_Name
+from Topic, Course 
+where Topic.Top_Id = Course.Top_Id 
+group by Top_Name
+
+--7
+select max(Salary), min(Salary)
+from Instructor
+
+--8
+select Ins_Name
+from Instructor
+where Salary< (select avg(Salary) from Instructor)
+
+--9
+select d.Dept_Name
+from Department d inner join Instructor i
+on d.Dept_Id = i.Dept_Id
+where  Salary = (select min(Salary) from Instructor)
+
+--10
+select top(2) Salary
+from Instructor
+order by Salary desc
+
+--11
+select Ins_Name, coalesce(Salary, 500)
+from Instructor
+
+--12
+select avg(Salary)
+from Instructor
+
+--13
+select St_Fname, ins.*
+from Student st, Department dept, Instructor ins
+where st.Dept_Id = dept.Dept_Id and dept.Dept_Id = ins.Dept_Id
+
+--14
+create view vstud as
+	select CONCAT_WS(' ', St_Fname, St_Lname) fullname, c.Crs_Name
+	from Student st inner join Stud_Course stC
+		on st.St_Id = stc.St_Id
+		inner join Course c
+		on c.Crs_Id = stC.Crs_Id
+		where Grade>50
+
+select * from vstud
+
+--15
+alter view vmgr as
+	select ins.Ins_Name, Top_Name
+	from Department, Instructor ins, Ins_Course insC , Course cr, Topic t
+	where ins.Ins_Id= Dept_Manager 
+			and ins.Ins_Id = insc.Ins_Id 
+			and  cr.Crs_Id = insC.Crs_Id
+			and t.Top_Id = cr.Top_Id
+
+select * from vmgr
+
+--16
+create view vieew as
+	select Ins_Name, Dept_Name
+	from Department,Instructor
+	where Department.Dept_Id = Instructor.Dept_Id 
+			and Dept_Name in ('SD' ,'Java')
+
+select * from vieew
+
+--17
+create view v1 as
+	select * from Student
+	where St_Address in ('alex', 'cairo')
+	with check option
+
+Update V1 set st_address='tanta'
+Where st_address='alex'
+
+
+--part 2
+use AdventureWorks2012
+
+--1
+select SalesPersonID, ShipDate
+from Sales.SalesOrderHeader
+where OrderDate between '7/28/2002' and '7/29/2014'
+
+--2
+select ProductID, Name
+from Production.Product
+where StandardCost<110
+
+--3
+select ProductID, Name
+from Production.Product
+where Weight is null
+
+--4
+select ProductID, Name
+from Production.Product
+where Color in ('red', 'silver', 'black')
+
+--5
+select ProductID, Name
+from Production.Product
+where name like 'B%'
+
+--6
+UPDATE Production.ProductDescription
+SET Description = 'Chromoly steel_High of defects'
+WHERE ProductDescriptionID = 3
+
+
+select * 
+from Production.ProductDescription
+where Description like '%[_]%'
+
+--7
+select sum(TotalDue)
+from Sales.SalesOrderHeader
+where OrderDate between '7/1/2001' and '7/31/2014'
+
+--8
+select distinct NationalIDNumber, HireDate
+from HumanResources.Employee
+
+--9
+select avg( distinct ListPrice)
+from Production.Product
+
+--10
+select CONCAT_WS(' ','The',Name ,'is only',ListPrice, '!')
+from Production.Product
+where ListPrice between 100 and 120
+
+--11
+--a
+select rowguid ,Name, SalesPersonID, Demographics into store_Archive
+	from Sales.Store
+--b
+select rowguid ,Name, SalesPersonID, Demographics into store_Archive1
+	from Sales.Store
+	where 1 = 2
+
+--12
+select FORMAT(GETDATE(),'dd-mm-yy')
+union
+select convert(varchar(50),GETDATE(), 101)
+union
+select FORMAT(GETDATE(),'dd-mm-yyyy hh')
+union
+select convert(varchar(50),GETDATE(), 105)
+

@@ -1,0 +1,82 @@
+use company_sd
+
+--1
+select dnum, dname, MGRSSN, fname
+from Departments, Employee
+where ssn = MGRSSN
+
+--2
+select dname, Pname
+from Departments d, project p
+where d.Dnum = p.Dnum
+
+--3
+select concat_ws(' ',e.fname,e.lname) [emp name], D.* 
+from Employee E, Dependent D
+where e.ssn =d.essn
+
+--4
+select Pnumber, pname, Plocation 
+from Project
+where city in ('alex', 'cairo')
+
+--5
+select *
+from Project
+where pname like 'a%'
+
+--6
+select concat_ws(' ',fname,lname) [emp name]
+from Employee inner join Departments
+on Dnum = dno and dnum = 30 and Salary between 1000 and 2000
+
+--7
+select distinct concat_ws(' ',fname,lname) [emp name]
+from Employee inner join Works_for
+on ssn = essn and Hours >= 10
+inner join Project
+on Pnumber = Pno
+where dnum = 10
+
+--8
+select concat_ws(' ',x.fname,x.lname) [emp name] 
+from Employee x, Employee y
+where y.ssn = x.Superssn and concat_ws(' ',y.fname,y.lname) = 'Kamel Mohamed'
+
+--9
+select concat_ws(' ',fname,lname) [emp name], Pname
+from Employee inner join Works_for
+on ssn = essn 
+inner join Project
+on Pnumber = Pno
+order by pname
+
+--10
+select p.Pnumber, d.Dname, d.MGRSSN, e.Lname, e.Address, e.Bdate
+from Departments d, Project p, Employee e
+where d.Dnum = p.Dnum and City = 'cairo'
+
+--11
+select e.*
+from Departments d, Employee e
+where e.ssn = d.MGRSSN
+-- managers & supervisor??
+
+--12
+select *
+from Employee left outer join Dependent
+on ssn = essn
+
+--13
+-- with wizard
+
+--14
+insert into Employee(Dno, ssn, Fname, Lname) values (30, 102660, 'mahmoud', 'alaa') 
+
+--15
+update Employee
+	set Salary = Salary*1.2
+	where ssn = 102672
+
+
+

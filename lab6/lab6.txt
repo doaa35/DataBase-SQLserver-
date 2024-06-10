@@ -1,0 +1,189 @@
+use iti
+
+--1
+alter function mdate(@d date)
+returns varchar(20)
+	begin
+		declare @date varchar(20)
+		select @date = format(@d, 'MMMM')
+		return @date
+	end
+
+select dbo.mdate('10-10-2001')
+
+--2
+alter function inBetween (@x int,@y int)
+returns @t table(coll int)
+as
+	begin
+		if @x <@y
+			begin
+				declare @dec int = @x+1
+				while @dec < @y
+					begin
+						insert into @t
+						select @dec
+						set @dec +=1
+					end
+			end
+			
+		else if @x >@y
+			begin
+				declare @decr int = @y+1
+				while @decr < @x
+					begin
+						insert into @t
+						select @decr
+						set @decr +=1
+					end
+			end
+		return
+	end
+
+select * from dbo.inBetween(5,0)
+
+--3
+create function std_dept(@id int)
+returns table
+as
+	return
+		(
+			select CONCAT_WS(' ', s.St_Fname, s.st_lname) [full name], d.Dept_Name
+			from Student s, Department d
+			where d.Dept_Id = s.Dept_Id and s.St_Id = @id
+		)
+
+select * from dbo.std_dept(10)
+
+--4
+create function nameIsNull(@id int)
+returns varchar(30)
+as
+	begin
+		declare @outMessage varchar(30)
+		declare @fname varchar(30)
+		declare @lname varchar(30)
+
+		select @fname= st_fname from Student where St_Id = @id
+		select @lname= st_lname from Student where St_Id = @id
+		
+		if @fname is null and @lname is null
+		set @outMessage = 'First name & last name are null'
+		
+		else if @fname is null and @lname is not null
+		set @outMessage = 'first name is null'
+
+		else if @fname is not null and @lname is null
+		set @outMessage = 'lirst name is null'
+
+		else
+		set @outMessage = 'First name & last name are not null'
+
+		return @outMessage
+	end
+
+select dbo.nameIsNull(8)
+
+--5
+alter function MGR(@id int)
+returns table
+as
+	return
+	(
+		select d.Dept_Name, i.Ins_Name MGR, d.Manager_hiredate
+		from Department d, Instructor i
+		where i.Ins_Id = d.Dept_Manager	and d.Dept_Manager = @id 
+	)
+
+select * from MGR(2)
+
+--6
+create function stdName(@details varchar(20))
+returns @t table(name varchar(20))
+as
+	begin
+		if @details = 'first name'
+			insert into @t 
+			select isnull(st_fname, 'no name') [name]
+			from Student
+		else if @details = 'last name'
+			insert into @t 
+			select isnull(st_lname, 'no name') [name]
+			from Student
+			
+		else if @details = 'full name' 
+			insert into @t 
+			select isnull(st_fname, 'no name') + ' ' +isnull(st_lname, 'no name')[name]
+			from Student
+	return
+	end
+
+select * from dbo.stdname('full name')
+
+--7
+select St_Id, SUBSTRING(St_Fname, 1, len(St_Fname)-1) [name -1]
+from Student
+
+--8
+update Stud_Course
+set Grade = null
+from Student s, Department d where d.Dept_Id = s.Dept_Id and d.Dept_Name = 'SD'
+
+--9
+create table dailyTrans(
+	 id int,
+	 amount int
+)
+
+create table lastTrans(
+	 id int,
+	 amount int
+)
+
+insert into dailyTrans values(1,1000),
+							(2,1000),
+							(3,1000)
+
+
+insert into lastTrans values(1,4000),
+							(4,2000),
+							(2,10000)
+--9
+merge into lasttrans  as t
+using dailyTrans as s
+on t.id = s.id
+when matched then
+	update set t.amount = s.amount
+when not matched by target then
+	insert values(s.id, s.amount)
+when not matched by source then
+	delete;
+
+--10
+create login ITIStud with password = '123'
+
+create schema st
+
+alter schema st transfer dbo.student 
+
+create user ITIStud for login ITIStud 
+	with default_schema=st 
+
+-----------------
+--bonus task
+create table testhire(
+	id int primary key, 
+	hir hierarchyid not null,
+	mgrId int,
+	position varchar(20)
+)
+--create unique index to make hierarchy tree
+create unique index unqIndex on testhire(hir)
+
+insert into testhire values(1,'/', null, 'CEO'),
+							(10,'/1/', 1, 'VPmarketing'),
+							(11,'/1/1/', 10, 'MGR Eroupe'),
+							(12,'/1/2/', 10, 'MGR Asia')
+
+select id,hir.ToString()[str],hir.GetLevel()[level], mgrid, position
+from testhire
